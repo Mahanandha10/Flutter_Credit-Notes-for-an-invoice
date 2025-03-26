@@ -1,14 +1,10 @@
 from pydantic import BaseModel
+from datetime import date
 
-class CustomerBase(BaseModel):
-    name: str
-    email: str
-
-class CustomerCreate(CustomerBase):
-    pass
-
-class CustomerResponse(CustomerBase):
-    id: int
-
-    class Config:
-        from_attributes = True  # Required for SQLAlchemy ORM integration
+class CustomerCreate(BaseModel):
+    customer_name: str
+    credit_note: str
+    date: date
+    sales_incharge: str
+    reason_status: str
+    credit_amount: float

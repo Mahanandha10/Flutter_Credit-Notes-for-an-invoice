@@ -1,12 +1,15 @@
-
 import 'package:flutter/material.dart';
+import 'api_service.dart';
 
 class CustomerForm extends StatefulWidget {
   @override
-  _CustomerFormState createState() => _CustomerFormState();
+  CustomerFormState createState() => CustomerFormState();
+  
 }
 
-class _CustomerFormState extends State<CustomerForm> {
+class CustomerFormState extends State<CustomerForm> {
+  String? _selectedSalesIncharge; 
+  String? _selectedReason;
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _dateController = TextEditingController();
   final TextEditingController _creditAmountController = TextEditingController();
@@ -38,13 +41,25 @@ class _CustomerFormState extends State<CustomerForm> {
     return null;
   }
 
-  void _submitForm() {
-    if (_formKey.currentState!.validate()) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Form submitted successfully!')),
-      );
-    }
+ void _submitForm() async {
+  if (_formKey.currentState!.validate()) {
+    final formData = {
+      "name": "John Doe",
+      "credit_note": "NEW",
+      "date": _dateController.text,
+      "sales_incharge": _selectedSalesIncharge ?? "Person1",
+      "reason": _selectedReason ?? "Aproved",
+      "credit_amount": double.tryParse(_creditAmountController.text) ?? 0.0,
+    };
+
+    await ApiService().submitCustomerData(formData);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Form submitted successfully!')),
+    );
   }
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -55,7 +70,7 @@ class _CustomerFormState extends State<CustomerForm> {
         padding: const EdgeInsets.all(16.0),
         child: SingleChildScrollView(
           child: Form(
-            key: _formKey, // Assign the form key
+            key: _formKey,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -63,11 +78,11 @@ class _CustomerFormState extends State<CustomerForm> {
                   title: 'Customer details',
                   child: Column(
                     children: [
-                      CustomTextField(hintText: 'Customer name'),
-                      SizedBox(height: 16),
+                     const CustomTextField(hintText: 'Customer name'),
+                     const SizedBox(height: 16),
                       Row(
                         children: [
-                          Expanded(
+                          const Expanded(
                             child: CustomTextField(
                               hintText: 'NEW',
                               readOnly: false,
@@ -75,7 +90,7 @@ class _CustomerFormState extends State<CustomerForm> {
                               floatingLabelBehavior: FloatingLabelBehavior.always,
                             ),
                           ),
-                          SizedBox(width: 16),
+                          const SizedBox(width: 16),
                           Expanded(
                             child: CustomTextField(
                               hintText: 'Date',
@@ -90,12 +105,12 @@ class _CustomerFormState extends State<CustomerForm> {
                     ],
                   ),
                 ),
-                SizedBox(height: 16),
-                Section(
+                const SizedBox(height: 16),
+               const Section(
                   title: 'Sales in-charge',
                   child: CustomDropdown(hintText: 'Sales incharge'),
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
                 Section(
                   title: 'Reason',
                   
@@ -103,11 +118,10 @@ class _CustomerFormState extends State<CustomerForm> {
                     children: [
                       ReasonDropdown(),
                       
-                      SizedBox(height: 16),
+                     const SizedBox(height: 16),
                       CustomTextField(
                         labelText: 'Reason for credit note',
                         hintText: 'Credit note amount',
-                        
                         controller: _creditAmountController,
                         keyboardType: TextInputType.number,
                         validator: _validateCreditAmount,
@@ -157,7 +171,7 @@ class Section extends StatelessWidget {
             color: Colors.grey[700],
           ),
         ),
-        if (labelText != null) // Show labelText only if provided
+        if (labelText != null)
           Padding(
             padding: const EdgeInsets.only(top: 8.0),
             child: Text(

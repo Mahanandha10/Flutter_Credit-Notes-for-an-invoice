@@ -4,21 +4,23 @@ import 'package:http/http.dart' as http;
 class ApiService {
   final String baseUrl = "http://127.0.0.1:8000";
 
-  Future<String> addCustomer(Map<String, dynamic> customerData) async {
+  Future<void> submitCustomerData(Map<String, dynamic> formData) async {
+    final url = Uri.parse("$baseUrl/submit-customer/");
+    
     try {
       final response = await http.post(
-        Uri.parse("$baseUrl/submit-form"),
+        url,
         headers: {"Content-Type": "application/json"},
-        body: jsonEncode(customerData),
+        body: jsonEncode(formData),
       );
 
       if (response.statusCode == 200) {
-        return jsonDecode(response.body)['message'];
+        print("Data submitted successfully: ${response.body}");
       } else {
-        throw Exception("Failed to add customer: ${response.body}");
+        print("Failed to submit data: ${response.statusCode}");
       }
     } catch (e) {
-      return "Error: $e";
+      print("Error: $e");
     }
   }
 }
