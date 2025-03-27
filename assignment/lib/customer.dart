@@ -8,10 +8,12 @@ class CustomerForm extends StatefulWidget {
 }
 
 class CustomerFormState extends State<CustomerForm> {
-  String? _selectedSalesIncharge; 
+  String? _selectedItem; 
   String? _selectedReason;
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _dateController = TextEditingController();
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _newController = TextEditingController();
   final TextEditingController _creditAmountController = TextEditingController();
 
   Future<void> _selectDate(BuildContext context) async {
@@ -29,14 +31,13 @@ class CustomerFormState extends State<CustomerForm> {
     }
   }
 
-  // Validate Credit Note Amount
   String? _validateCreditAmount(String? value) {
     if (value == null || value.isEmpty) {
       return 'Enter Credit Note Amount';
     }
     final num? amount = num.tryParse(value);
     if (amount == null || amount <= 0) {
-      return 'Enter a valid amount greater than zero';
+      return 'Enter a valid amount';
     }
     return null;
   }
@@ -44,14 +45,13 @@ class CustomerFormState extends State<CustomerForm> {
  void _submitForm() async {
   if (_formKey.currentState!.validate()) {
     final formData = {
-      "name": "John Doe",
-      "credit_note": "NEW",
+      "name": _nameController.text,
+      "credit_note": _newController.text,
       "date": _dateController.text,
-      "sales_incharge": _selectedSalesIncharge ?? "Person1",
+      "sales_incharge": _selectedItem ?? "Person1",
       "reason": _selectedReason ?? "Aproved",
       "credit_amount": double.tryParse(_creditAmountController.text) ?? 0.0,
     };
-
     await ApiService().submitCustomerData(formData);
 
     ScaffoldMessenger.of(context).showSnackBar(
@@ -65,7 +65,7 @@ class CustomerFormState extends State<CustomerForm> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color.fromRGBO(245, 245, 245, 1),
-      appBar: AppBar(title: Text('Customer Form')),
+      appBar: AppBar(title: const Text('Customer Form')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: SingleChildScrollView(
@@ -78,13 +78,17 @@ class CustomerFormState extends State<CustomerForm> {
                   title: 'Customer details',
                   child: Column(
                     children: [
-                     const CustomTextField(hintText: 'Customer name'),
+                      CustomTextField(hintText: 'Customer name',
+                      controller: _nameController,
+                      ),
+                      
                      const SizedBox(height: 16),
                       Row(
                         children: [
-                          const Expanded(
+                          Expanded(
                             child: CustomTextField(
                               hintText: 'NEW',
+                              controller: _newController,
                               readOnly: false,
                               labelText:"credit note",
                               floatingLabelBehavior: FloatingLabelBehavior.always,
@@ -96,7 +100,7 @@ class CustomerFormState extends State<CustomerForm> {
                               hintText: 'Date',
                               controller: _dateController,
                               readOnly: true,
-                              suffixIcon: Icon(Icons.calendar_month_outlined),
+                              suffixIcon: const Icon(Icons.calendar_month_outlined),
                               onTap: () => _selectDate(context),
                             ),
                           ),
@@ -106,9 +110,11 @@ class CustomerFormState extends State<CustomerForm> {
                   ),
                 ),
                 const SizedBox(height: 16),
-               const Section(
+                Section(
                   title: 'Sales in-charge',
-                  child: CustomDropdown(hintText: 'Sales incharge'),
+                  child: CustomDropdown(hintText: 'Sales incharge',
+                 // controller: _selectedItem,
+                  ),
                 ),
                 const SizedBox(height: 16),
                 Section(
@@ -129,11 +135,11 @@ class CustomerFormState extends State<CustomerForm> {
                     ],
                   ),
                 ),
-                SizedBox(height: 24),
+                const SizedBox(height: 24),
                 Center(
                   child: ElevatedButton(
                     onPressed: _submitForm,
-                    child: Text('Submit'),
+                    child: const Text('Submit'),
                   ),
                 ),
               ],
@@ -176,10 +182,10 @@ class Section extends StatelessWidget {
             padding: const EdgeInsets.only(top: 8.0),
             child: Text(
               labelText!,
-              style: TextStyle(fontSize: 14, color: Colors.black54),
+              style: const TextStyle(fontSize: 14, color: Colors.black54),
             ),
           ),
-        SizedBox(height: 8),
+        const SizedBox(height: 8),
         child,
       ],
     );
@@ -235,7 +241,7 @@ class CustomTextField extends StatelessWidget {
 class CustomDropdown extends StatefulWidget {
   final String hintText;
 
-  const CustomDropdown({Key? key, required this.hintText}) : super(key: key);
+  CustomDropdown({Key? key, required this.hintText}) : super(key: key);
 
   @override
   _CustomDropdownState createState() => _CustomDropdownState();
@@ -248,7 +254,7 @@ class _CustomDropdownState extends State<CustomDropdown> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(8),
@@ -278,7 +284,6 @@ class _CustomDropdownState extends State<CustomDropdown> {
   }
 }
 
-// Reason Dropdown Widget
 class ReasonDropdown extends StatefulWidget {
   @override
   _ReasonDropdownState createState() => _ReasonDropdownState();
@@ -287,16 +292,16 @@ class ReasonDropdown extends StatefulWidget {
 class _ReasonDropdownState extends State<ReasonDropdown> {
   String? _selectedReason;
   final List<String> _reasons = [
+    'New',
     'Pending',
     'Approved',
-    'Rejected',
-    'New'
+    'Rejected'
+    
   ];
-
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(8),
