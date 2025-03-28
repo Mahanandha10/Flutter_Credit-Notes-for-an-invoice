@@ -4,17 +4,17 @@ import 'api_service.dart';
 class CustomerForm extends StatefulWidget {
   @override
   CustomerFormState createState() => CustomerFormState();
-  
 }
 
 class CustomerFormState extends State<CustomerForm> {
-  String? _selectedItem; 
-  String? _selectedReason;
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _dateController = TextEditingController();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _newController = TextEditingController();
   final TextEditingController _creditAmountController = TextEditingController();
+
+  String? _selectedItem;
+  String? _selectedReason;
 
   Future<void> _selectDate(BuildContext context) async {
     DateTime? pickedDate = await showDatePicker(
@@ -26,7 +26,8 @@ class CustomerFormState extends State<CustomerForm> {
 
     if (pickedDate != null) {
       setState(() {
-        _dateController.text = "${pickedDate.day}/${pickedDate.month}/${pickedDate.year}";
+        _dateController.text =
+            "${pickedDate.day}/${pickedDate.month}/${pickedDate.year}";
       });
     }
   }
@@ -42,24 +43,45 @@ class CustomerFormState extends State<CustomerForm> {
     return null;
   }
 
- void _submitForm() async {
-  if (_formKey.currentState!.validate()) {
-    final formData = {
-      "name": _nameController.text,
-      "credit_note": _newController.text,
-      "date": _dateController.text,
-      "sales_incharge": _selectedItem ?? "Person1",
-      "reason": _selectedReason ?? "Aproved",
-      "credit_amount": double.tryParse(_creditAmountController.text) ?? 0.0,
-    };
-    await ApiService().submitCustomerData(formData);
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Form submitted successfully!')),
-    );
+  void _updateSelectedItem(String? newValue) {
+    setState(() {
+      _selectedItem = newValue;
+    });
   }
-}
 
+  void _updateSelectedReason(String? newValue) {
+    setState(() {
+      _selectedReason = newValue;
+    });
+  }
+
+  void _submitForm() async {
+    if (_formKey.currentState!.validate()) {
+      final formData = {
+        "name": _nameController.text,
+        "credit_note": _newController.text,
+        "date": _dateController.text,
+        "sales_incharge": _selectedItem ?? "Person1",
+        "reason": _selectedReason ?? "Approved",
+        "credit_amount": double.tryParse(_creditAmountController.text) ?? 0.0,
+      };
+      await ApiService().submitCustomerData(formData);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Form submitted successfully!')),
+      );
+
+      _formKey.currentState!.reset();
+      _dateController.clear();
+      _nameController.clear();
+      _newController.clear();
+      _creditAmountController.clear();
+      setState(() {
+        _selectedItem = null;
+        _selectedReason = null;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -78,20 +100,20 @@ class CustomerFormState extends State<CustomerForm> {
                   title: 'Customer details',
                   child: Column(
                     children: [
-                      CustomTextField(hintText: 'Customer name',
-                      controller: _nameController,
+                      CustomTextField(
+                        hintText: 'Customer name',
+                        controller: _nameController,
                       ),
-                      
-                     const SizedBox(height: 16),
+                      const SizedBox(height: 16),
                       Row(
                         children: [
                           Expanded(
                             child: CustomTextField(
                               hintText: 'NEW',
                               controller: _newController,
-                              readOnly: false,
-                              labelText:"credit note",
-                              floatingLabelBehavior: FloatingLabelBehavior.always,
+                              labelText: "Credit Note",
+                              floatingLabelBehavior:
+                                  FloatingLabelBehavior.always,
                             ),
                           ),
                           const SizedBox(width: 16),
@@ -100,7 +122,8 @@ class CustomerFormState extends State<CustomerForm> {
                               hintText: 'Date',
                               controller: _dateController,
                               readOnly: true,
-                              suffixIcon: const Icon(Icons.calendar_month_outlined),
+                              suffixIcon:
+                                  const Icon(Icons.calendar_month_outlined),
                               onTap: () => _selectDate(context),
                             ),
                           ),
@@ -112,19 +135,18 @@ class CustomerFormState extends State<CustomerForm> {
                 const SizedBox(height: 16),
                 Section(
                   title: 'Sales in-charge',
-                  child: CustomDropdown(hintText: 'Sales incharge',
-                 // controller: _selectedItem,
+                  child: CustomDropdown(
+                    hintText: 'Sales incharge',
+                    onChanged: _updateSelectedItem,
                   ),
                 ),
                 const SizedBox(height: 16),
                 Section(
                   title: 'Reason',
-                  
                   child: Column(
                     children: [
-                      ReasonDropdown(),
-                      
-                     const SizedBox(height: 16),
+                      ReasonDropdown(onChanged: _updateSelectedReason),
+                      const SizedBox(height: 16),
                       CustomTextField(
                         labelText: 'Reason for credit note',
                         hintText: 'Credit note amount',
@@ -151,16 +173,14 @@ class CustomerFormState extends State<CustomerForm> {
   }
 }
 
-// Custom Section Widget
+// Section Widget
 class Section extends StatelessWidget {
   final String title;
   final Widget child;
-  final String? labelText;
 
   const Section({
     Key? key,
     required this.title,
-    this.labelText,
     required this.child,
   }) : super(key: key);
 
@@ -177,14 +197,6 @@ class Section extends StatelessWidget {
             color: Colors.grey[700],
           ),
         ),
-        if (labelText != null)
-          Padding(
-            padding: const EdgeInsets.only(top: 8.0),
-            child: Text(
-              labelText!,
-              style: const TextStyle(fontSize: 14, color: Colors.black54),
-            ),
-          ),
         const SizedBox(height: 8),
         child,
       ],
@@ -192,6 +204,7 @@ class Section extends StatelessWidget {
   }
 }
 
+// Custom TextField Widget
 class CustomTextField extends StatelessWidget {
   final String hintText;
   final bool readOnly;
@@ -227,7 +240,8 @@ class CustomTextField extends StatelessWidget {
       decoration: InputDecoration(
         hintText: hintText,
         labelText: labelText,
-        floatingLabelBehavior: floatingLabelBehavior ?? FloatingLabelBehavior.auto,
+        floatingLabelBehavior:
+            floatingLabelBehavior ?? FloatingLabelBehavior.auto,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
         ),
@@ -238,94 +252,40 @@ class CustomTextField extends StatelessWidget {
 }
 
 // Custom Dropdown Widget
-class CustomDropdown extends StatefulWidget {
+class CustomDropdown extends StatelessWidget {
   final String hintText;
+  final Function(String?) onChanged;
 
-  CustomDropdown({Key? key, required this.hintText}) : super(key: key);
-
-  @override
-  _CustomDropdownState createState() => _CustomDropdownState();
-}
-
-class _CustomDropdownState extends State<CustomDropdown> {
-  String? _selectedItem;
-  final List<String> _items = ['Person1', 'Person2', 'Person3'];
+  const CustomDropdown({Key? key, required this.hintText, required this.onChanged}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.green),
-      ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<String>(
-          isExpanded: true,
-          value: _selectedItem,
-          hint: Text(widget.hintText, style: TextStyle(color: Colors.grey[700])),
-          icon: Icon(Icons.arrow_drop_down, color: Colors.grey[700]),
-          onChanged: (String? newValue) {
-            setState(() {
-              _selectedItem = newValue;
-            });
-          },
-          items: _items.map((String value) {
-            return DropdownMenuItem(
-              
-              value: value,
-              child: Text(value),
-            );
-          }).toList(),
-        ),
-      ),
+    return DropdownButtonFormField<String>(
+      decoration: const InputDecoration(border: OutlineInputBorder()),
+      hint: Text(hintText),
+      items: ['Person1', 'Person2', 'Person3']
+          .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+          .toList(),
+      onChanged: onChanged,
     );
   }
 }
 
-class ReasonDropdown extends StatefulWidget {
-  @override
-  _ReasonDropdownState createState() => _ReasonDropdownState();
-}
+// Reason Dropdown Widget
+class ReasonDropdown extends StatelessWidget {
+  final Function(String?) onChanged;
 
-class _ReasonDropdownState extends State<ReasonDropdown> {
-  String? _selectedReason;
-  final List<String> _reasons = [
-    'New',
-    'Pending',
-    'Approved',
-    'Rejected'
-    
-  ];
+  const ReasonDropdown({Key? key, required this.onChanged}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.green),
-      ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<String>(
-          isExpanded: true,
-          value: _selectedReason,
-          hint: Text('Reason for credit note', style: TextStyle(color: Colors.grey[700])),
-          icon: Icon(Icons.arrow_drop_down, color: Colors.grey[700]),
-          onChanged: (String? newValue) {
-            setState(() {
-              _selectedReason = newValue;
-            });
-          },
-          items: _reasons.map((String value) {
-            return DropdownMenuItem(
-              value: value,
-              child: Text(value),
-            );
-          }).toList(),
-        ),
-      ),
+    return DropdownButtonFormField<String>(
+      decoration: const InputDecoration(border: OutlineInputBorder()),
+      hint: const Text('Reason for credit note'),
+      items: ['New', 'Pending', 'Approved', 'Rejected']
+          .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+          .toList(),
+      onChanged: onChanged,
     );
   }
 }
